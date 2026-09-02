@@ -282,28 +282,79 @@ function loadPreset(presetKey) {
 }
 
 /**
- * Handles uploading and converting image to Base64
+ * Compresses and downscales an uploaded image using HTML5 Canvas to optimize payload size and AI processing latency.
+ * @param {File} file - Uploaded raw image file
+ * @param {number} [maxDimension=1024] - Max bounding box constraint
+ * @param {number} [quality=0.82] - JPEG quality ratio (0.0 to 1.0)
+ * @returns {Promise<{ base64: string, mimeType: string }>}
  */
-function handleImageFile(file) {
-  if (!file.type.startsWith('image/')) {
-    alert('Please upload an image file (PNG, JPG, WEBP).');
+function compressAndResizeImage(file, maxDimension = 1024, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read image file.'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Failed to decode image data.'));
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve({
+          base64: compressedBase64,
+          mimeType: 'image/jpeg'
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Handles uploading, compressing, and setting image data
+ * @param {File} file
+ */
+async function handleImageFile(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    alert('Please upload a valid image file (PNG, JPG, WEBP).');
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    state.imageBase64 = dataUrl;
-    state.imageMimeType = file.type;
+  try {
+    const { base64, mimeType } = await compressAndResizeImage(file, 1024, 0.82);
+    state.imageBase64 = base64;
+    state.imageMimeType = mimeType;
 
-    elements.imagePreview.src = dataUrl;
+    elements.imagePreview.src = base64;
     elements.imagePreviewContainer.classList.remove('hidden');
     elements.dropZone.classList.add('hidden');
-    announceToScreenReader(`Image uploaded: ${file.name}`);
-  };
-  reader.readAsDataURL(file);
+    announceToScreenReader(`Image uploaded and optimized for triage: ${file.name}`);
+  } catch (err) {
+    alert('Unable to process image: ' + err.message);
+  }
 }
 
+/**
+ * Removes the currently uploaded image preview
+ */
 function removeUploadedImage() {
   state.imageBase64 = null;
   state.imageMimeType = null;
@@ -699,7 +750,12 @@ function toggleSpeechRecognition() {
     recognition.interimResults = true;
 
     if (state.selectedLanguage === 'hi') recognition.lang = 'hi-IN';
-    else if (state.selectedLanguage === 'es') recognition.lang = 'es-ES';
+    else if (state.selectedLanguage === 'hinglish') recognition.lang = 'hi-IN';
+    else if (state.selectedLanguage === 'pa') recognition.lang = 'pa-IN';
+    else if (state.selectedLanguage === 'bn') recognition.lang = 'bn-IN';
+    else if (state.selectedLanguage === 'ta') recognition.lang = 'ta-IN';
+    else if (state.selectedLanguage === 'te') recognition.lang = 'te-IN';
+    else if (state.selectedLanguage === 'mr') recognition.lang = 'mr-IN';
     else recognition.lang = 'en-US';
 
     recognition.onstart = () => {

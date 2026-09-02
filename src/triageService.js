@@ -22,6 +22,55 @@ const LANGUAGE_MAP = {
 };
 
 /**
+ * In-memory LRU Cache for emergency triage requests.
+ * Eliminates redundant API latency and avoids re-querying identical prompts.
+ */
+const triageCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_CACHE_SIZE = 64;
+
+/**
+ * Generates an efficient deterministic cache key.
+ * @param {string} prompt
+ * @param {string} language
+ * @param {string} incidentType
+ * @param {string} imageBase64
+ * @returns {string}
+ */
+function getCacheKey(prompt, language, incidentType, imageBase64) {
+  const imgHash = imageBase64 ? imageBase64.slice(0, 40) + imageBase64.length : 'none';
+  return `${language}_${incidentType || ''}_${imgHash}_${(prompt || '').trim().toLowerCase()}`;
+}
+
+/**
+ * Retrieves a non-expired cached response.
+ * @param {string} key
+ * @returns {object|null}
+ */
+function getFromCache(key) {
+  const entry = triageCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    triageCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+/**
+ * Saves a response to the in-memory cache.
+ * @param {string} key
+ * @param {object} data
+ */
+function setToCache(key, data) {
+  if (triageCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = triageCache.keys().next().value;
+    triageCache.delete(oldestKey);
+  }
+  triageCache.set(key, { timestamp: Date.now(), data });
+}
+
+/**
  * Fallback knowledge repository for emergency safety presets across languages
  */
 const MULTILINGUAL_FALLBACKS = {
@@ -554,10 +603,25 @@ async function generateTriage({ prompt, imageBase64, mimeType = 'image/jpeg', la
   const apiKey = process.env.GEMINI_API_KEY;
   const isKeyValid = apiKey && apiKey.trim() !== '' && apiKey !== 'YOUR_GEMINI_API_KEY';
 
+  // Check in-memory triage cache for identical queries
+  const cacheKey = getCacheKey(prompt, normalizedLangCode, incidentType, imageBase64);
+  const cachedResponse = getFromCache(cacheKey);
+  if (cachedResponse) {
+    return {
+      ...cachedResponse,
+      meta: {
+        ...cachedResponse.meta,
+        cached: true,
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+
   // If no valid API key is configured, safely use the intelligent local fallback
   if (!isKeyValid) {
-    console.warn('[ResQCampus AI] GEMINI_API_KEY is not configured or placeholder. Using resilient local fallback engine.');
-    return generateFallbackTriage({ prompt: prompt || incidentType, language: normalizedLangCode, targetLanguage: normalizedLangCode, incidentType });
+    const fallbackResult = generateFallbackTriage({ prompt: prompt || incidentType, language: normalizedLangCode, targetLanguage: normalizedLangCode, incidentType });
+    setToCache(cacheKey, fallbackResult);
+    return fallbackResult;
   }
 
   const targetLangName = LANGUAGE_MAP[normalizedLangCode] || 'English';
@@ -665,7 +729,9 @@ You MUST return strictly valid JSON matching the schema with zero markdown fenci
       const errorText = await response.text();
       console.error(`[ResQCampus AI] Gemini API returned error HTTP ${response.status}:`, errorText);
       // Failover safely to intelligent local fallback engine
-      return generateFallbackTriage({ prompt: prompt || incidentType, language, incidentType });
+      const fallback = generateFallbackTriage({ prompt: prompt || incidentType, language: normalizedLangCode, targetLanguage: normalizedLangCode, incidentType });
+      setToCache(cacheKey, fallback);
+      return fallback;
     }
 
     const jsonResponse = await response.json();
@@ -673,7 +739,9 @@ You MUST return strictly valid JSON matching the schema with zero markdown fenci
 
     if (!candidateText) {
       console.warn('[ResQCampus AI] Empty candidate response from Gemini API. Falling back to local engine.');
-      return generateFallbackTriage({ prompt: prompt || incidentType, language, incidentType });
+      const fallback = generateFallbackTriage({ prompt: prompt || incidentType, language: normalizedLangCode, targetLanguage: normalizedLangCode, incidentType });
+      setToCache(cacheKey, fallback);
+      return fallback;
     }
 
     let parsedData;
@@ -681,7 +749,9 @@ You MUST return strictly valid JSON matching the schema with zero markdown fenci
       parsedData = JSON.parse(candidateText);
     } catch (parseErr) {
       console.warn('[ResQCampus AI] Failed to parse JSON response. Using fallback. Parse error:', parseErr.message);
-      return generateFallbackTriage({ prompt: prompt || incidentType, language, incidentType });
+      const fallback = generateFallbackTriage({ prompt: prompt || incidentType, language: normalizedLangCode, targetLanguage: normalizedLangCode, incidentType });
+      setToCache(cacheKey, fallback);
+      return fallback;
     }
 
     // Validate structured output against schema
@@ -708,16 +778,19 @@ You MUST return strictly valid JSON matching the schema with zero markdown fenci
     parsedData.meta = {
       model: GEMINI_MODEL,
       source: 'Google Gemini 2.5 Flash Multimodal API',
-      language: language,
+      language: normalizedLangCode,
       timestamp: new Date().toISOString()
     };
 
+    setToCache(cacheKey, parsedData);
     return parsedData;
 
   } catch (networkError) {
     console.error('[ResQCampus AI] Network / execution error during Gemini API call:', networkError.message);
     // Bulletproof fallback to ensure continuous 24/7 campus emergency operations
-    return generateFallbackTriage({ prompt: prompt || incidentType, language, incidentType });
+    const fallback = generateFallbackTriage({ prompt: prompt || incidentType, language: normalizedLangCode, targetLanguage: normalizedLangCode, incidentType });
+    setToCache(cacheKey, fallback);
+    return fallback;
   }
 }
 
