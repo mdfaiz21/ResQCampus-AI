@@ -1,0 +1,155 @@
+/**
+ * ResQCampus AI - Emergency Safety Custom Stylesheet
+ * High-Contrast WCAG 2.1 AA Compliant & Accessible Theme System
+ */
+
+/* Root CSS Variables for Dynamic Contrast & Font Scaling */
+:root {
+  --base-font-size: 16px;
+  --bg-primary: #0b0f19;
+  --bg-surface: #111827;
+  --bg-card: #1f2937;
+  --border-color: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --accent-red: #ef4444;
+  --accent-amber: #f59e0b;
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --focus-ring: #60a5fa;
+}
+
+html {
+  font-size: var(--base-font-size);
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Accessibility Focus States */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Ultra High-Contrast Mode */
+body.theme-high-contrast {
+  --bg-primary: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-card: #121212;
+  --border-color: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --accent-red: #ff3b30;
+  --accent-amber: #ffcc00;
+  --accent-green: #34c759;
+  --accent-blue: #5ac8fa;
+  --focus-ring: #ffff00;
+}
+
+body.theme-high-contrast * {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Emergency Night Vision Red Mode */
+body.theme-night-red {
+  --bg-primary: #1a0505;
+  --bg-surface: #2d0a0a;
+  --bg-card: #3f1010;
+  --border-color: #7f1d1d;
+  --text-primary: #fee2e2;
+  --text-secondary: #fca5a5;
+  --accent-red: #ef4444;
+  --accent-amber: #fbbf24;
+  --accent-green: #34d399;
+  --accent-blue: #f87171;
+  --focus-ring: #f87171;
+}
+
+/* Pulsing Emergency SOS Beacon */
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+.animate-pulse-sos {
+  animation: pulseGlow 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.radar-sweep {
+  animation: radarSweep 4s linear infinite;
+}
+
+/* Drag and Drop Zone Hover */
+.dropzone.drag-active {
+  border-color: #60a5fa !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Checkbox strike-through for completed steps */
+.step-item.completed {
+  opacity: 0.65;
+}
+
+.step-item.completed .step-text {
+  text-decoration: line-through;
+}
+
+/* Custom Scrollbar for Accessibility */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Print Friendly Styles */
+@media print {
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

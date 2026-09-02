@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResQCampus AI - Multimodal Emergency Triage & Assistive Safety Copilot</title>
+  <meta name="description" content="AI-powered multimodal emergency health & safety triage copilot for university campuses. PromptWars x WIE-IEEE Assistive Health & Emergency Safety challenge.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom High-Contrast Accessibility Styles -->
+  <link rel="stylesheet" href="/styles.css">
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2226%22>🚨</text></svg>">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col antialiased selection:bg-red-500 selection:text-white">
+
+  <!-- Screen Reader Announcements (ARIA-Live) -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Skip to Main Content Link for Keyboard Navigation -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-2xl ring-4 ring-white">
+    Skip to Emergency Triage
+  </a>
+
+  <!-- Top Navigation & Accessibility Bar -->
+  <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Badges -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-amber-600 flex items-center justify-center text-xl shadow-lg border border-red-500/30" aria-hidden="true">
+          🚨
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-xl font-extrabold tracking-tight text-white">ResQCampus AI</h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-900/60 text-blue-300 border border-blue-700/50">
+              WIE-IEEE EDITION
+            </span>
+          </div>
+          <p class="text-xs text-gray-400 font-medium hidden sm:block">Multimodal Emergency Triage & Assistive Safety Copilot</p>
+        </div>
+      </div>
+
+      <!-- Quick Accessibility & Language Controls -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        
+        <!-- Font Scaler -->
+        <div class="flex items-center bg-gray-800 rounded-lg p-1 border border-gray-700 text-xs font-bold" role="group" aria-label="Text Size Controls">
+          <button id="font-decrease-btn" type="button" class="px-2 py-1 hover:bg-gray-700 rounded text-gray-300 hover:text-white" title="Decrease font size" aria-label="Decrease text size">A-</button>
+          <span id="font-size-label" class="px-1 text-gray-400 text-[10px]" aria-hidden="true">A</span>
+          <button id="font-increase-btn" type="button" class="px-2 py-1 hover:bg-gray-700 rounded text-gray-300 hover:text-white" title="Increase font size" aria-label="Increase text size">A+</button>
+        </div>
+
+        <!-- High Contrast / Theme Switcher -->
+        <button id="theme-toggle-btn" type="button" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center space-x-1" aria-label="Toggle High-Contrast Mode" aria-pressed="false">
+          <span aria-hidden="true">👁️</span>
+          <span class="hidden md:inline">Contrast</span>
+        </button>
+
+        <!-- Offline Emergency Guide Button -->
+        <button id="offline-guide-btn" type="button" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center space-x-1.5 focus:ring-2 focus:ring-emerald-400" aria-haspopup="dialog" aria-expanded="false" title="Open Offline First-Aid Guide">
+          <span aria-hidden="true">📖</span>
+          <span class="hidden sm:inline">Offline Guide</span>
+        </button>
+
+        <!-- Dynamic Language Selector -->
+        <div class="relative">
+          <label for="languageSelect" class="sr-only">Target Language</label>
+          <select id="languageSelect" name="targetLanguage" class="bg-gray-800 border border-gray-700 text-gray-100 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+            <option value="en" selected>🌐 English</option>
+            <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+            <option value="hinglish">🇮🇳 Hinglish</option>
+            <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+            <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+            <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+            <option value="mr">🇮🇳 मराठी (Marathi)</option>
+          </select>
+        </div>
+
+        <!-- 1-Tap SOS Button -->
+        <button id="sos-trigger-btn" type="button" class="animate-pulse-sos bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-2 rounded-xl shadow-xl border border-red-400 flex items-center space-x-1.5 focus:ring-4 focus:ring-red-400">
+          <span aria-hidden="true" class="text-base">⚡</span>
+          <span>1-TAP SOS</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Content -->
+  <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Input Form & Presets (7 Cols) -->
+    <section class="lg:col-span-7 space-y-6" aria-labelledby="incident-form-title">
+      
+      <!-- Quick Incident Presets Bar -->
+      <div class="bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <h2 id="preset-heading" class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center space-x-1.5">
+            <span aria-hidden="true">⚡</span>
+            <span>Quick Incident Presets (1-Click Auto Fill)</span>
+          </h2>
+          <span class="text-[11px] text-blue-400 font-medium">Campus Hazards</span>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" role="group" aria-labelledby="preset-heading">
+          <button type="button" class="preset-btn text-left p-2.5 rounded-xl bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-red-500/50 text-xs font-medium text-gray-200 transition active:scale-95" data-preset="chemical">
+            <span class="text-sm block mb-1">🧪 Chemical Spill</span>
+            <span class="text-[10px] text-gray-400 block truncate">Acid / Solvent Exposure</span>
+          </button>
+          
+          <button type="button" class="preset-btn text-left p-2.5 rounded-xl bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-red-500/50 text-xs font-medium text-gray-200 transition active:scale-95" data-preset="bleeding">
+            <span class="text-sm block mb-1">🩸 Severe Bleeding</span>
+            <span class="text-[10px] text-gray-400 block truncate">Deep Cut / Glass Laceration</span>
+          </button>
+          
+          <button type="button" class="preset-btn text-left p-2.5 rounded-xl bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-amber-500/50 text-xs font-medium text-gray-200 transition active:scale-95" data-preset="unconscious">
+            <span class="text-sm block mb-1">🛌 Heatstroke / Syncope</span>
+            <span class="text-[10px] text-gray-400 block truncate">Unconscious Student</span>
+          </button>
+          
+          <button type="button" class="preset-btn text-left p-2.5 rounded-xl bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-orange-500/50 text-xs font-medium text-gray-200 transition active:scale-95" data-preset="labhazard">
+            <span class="text-sm block mb-1">🔥 Lab Fire / Electric</span>
+            <span class="text-[10px] text-gray-400 block truncate">Bench Smoke & Spark</span>
+          </button>
+
+          <button type="button" class="preset-btn text-left p-2.5 rounded-xl bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-purple-500/50 text-xs font-medium text-gray-200 transition active:scale-95 sm:col-span-2" data-preset="respiratory">
+            <span class="text-sm block mb-1">🫁 Anaphylaxis / Asthma</span>
+            <span class="text-[10px] text-gray-400 block truncate">Acute Respiratory Distress in Dining Hall</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Multimodal Triage Form -->
+      <form id="triage-form" class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        
+        <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+          <h2 id="incident-form-title" class="text-base font-bold text-white flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" aria-hidden="true"></span>
+            <span>Multimodal Incident Intake</span>
+          </h2>
+          <span class="text-xs text-gray-400">Gemini 2.5 Flash Engine</span>
+        </div>
+
+        <!-- Location Field -->
+        <div>
+          <label for="location-input" class="block text-xs font-semibold text-gray-300 mb-1">
+            📍 Campus Location / Building Sector
+          </label>
+          <input type="text" id="location-input" name="location" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Science Building Block B, Lab 201">
+        </div>
+
+        <!-- Text Description Box with Character Count & Mic -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="prompt-input" class="block text-xs font-semibold text-gray-300">
+              📝 Emergency Description / Symptoms
+            </label>
+            <div class="flex items-center space-x-2">
+              <span id="char-count" class="text-[10px] text-gray-500">0 / 1000</span>
+              <button type="button" id="mic-btn" class="inline-flex items-center px-2 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs text-gray-200 transition focus:ring-2 focus:ring-red-400" title="Voice to text" aria-label="Use microphone for speech to text">
+                <span aria-hidden="true" class="mr-1">🎙️</span>
+                <span>Voice Input</span>
+              </button>
+            </div>
+          </div>
+          <div id="mic-status" class="text-[11px] text-red-400 font-medium mb-1 min-h-[16px]"></div>
+          <textarea id="prompt-input" name="prompt" rows="4" maxlength="1000" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y" placeholder="Describe the victim's symptoms, injury, chemical exposure, or hazardous situation in plain language..."></textarea>
+        </div>
+
+        <!-- Multimodal Image Upload / Drag & Drop -->
+        <fieldset>
+          <legend class="block text-xs font-semibold text-gray-300 mb-1.5">
+            📷 Multimodal Visual Capture (Image / Incident Photo)
+          </legend>
+          <input type="file" id="image-file-input" accept="image/*" class="hidden" aria-label="Upload incident photo">
+          
+          <!-- Drop Zone -->
+          <div id="drop-zone" class="dropzone border-2 border-dashed border-gray-700 hover:border-blue-500 rounded-xl p-5 text-center cursor-pointer transition bg-gray-800/40" tabindex="0" role="button" aria-label="Click or drag image file here to upload">
+            <div class="flex flex-col items-center justify-center space-y-2">
+              <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-lg text-blue-400" aria-hidden="true">
+                📸
+              </div>
+              <p class="text-xs text-gray-300 font-medium">
+                <span class="text-blue-400 font-semibold underline">Click to upload</span> or drag and drop an incident image
+              </p>
+              <p class="text-[10px] text-gray-500">Supports PNG, JPG, WEBP (Evaluates wound, burn, spill, or lab warning label)</p>
+            </div>
+          </div>
+
+          <!-- Image Preview Area -->
+          <div id="image-preview-container" class="hidden relative mt-2 bg-gray-800 rounded-xl p-2 border border-gray-700">
+            <div class="flex items-center space-x-3">
+              <img id="image-preview" src="" alt="Incident Preview" class="w-20 h-20 object-cover rounded-lg border border-gray-600">
+              <div class="flex-1">
+                <p class="text-xs font-bold text-gray-200">Incident Image Attached</p>
+                <p class="text-[11px] text-gray-400">Ready for Multimodal Gemini 2.5 Flash Vision Triage</p>
+              </div>
+              <button type="button" id="remove-image-btn" class="px-2.5 py-1.5 bg-red-900/60 hover:bg-red-800 border border-red-700 text-red-200 text-xs font-semibold rounded-lg" aria-label="Remove uploaded image">
+                Remove
+              </button>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Submit Button -->
+        <button id="submit-btn" type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm py-3.5 px-6 rounded-xl shadow-xl flex items-center justify-center space-x-2 transition active:scale-[0.99] focus:ring-4 focus:ring-blue-400">
+          <svg id="submit-spinner" class="hidden animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span id="submit-text">Generate Emergency Triage & First Aid</span>
+        </button>
+
+      </form>
+    </section>
+
+    <!-- Right Column: Real-Time Triage HUD & Dispatch Beacon (5 Cols) -->
+    <section class="lg:col-span-5 space-y-6" aria-labelledby="triage-output-title">
+      
+      <!-- Placeholder when no triage generated yet -->
+      <div id="hud-placeholder" class="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center shadow-lg flex flex-col items-center justify-center min-h-[420px] space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-gray-800/80 border border-gray-700 flex items-center justify-center text-3xl shadow-inner" aria-hidden="true">
+          🛡️
+        </div>
+        <h2 id="triage-output-title" class="text-base font-bold text-gray-200">Emergency Triage Standby</h2>
+        <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
+          Select a quick preset or provide an emergency description / photo on the left. The AI copilot will compute triage severity, localized step-by-step first aid, safety warnings, and campus dispatch telemetry.
+        </p>
+        <div class="flex items-center space-x-2 text-[11px] text-gray-500 font-mono">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>CAMPUS DEFENSE SYSTEM READY</span>
+        </div>
+      </div>
+
+      <!-- Live Triage Results Container -->
+      <div id="triage-results" class="hidden bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-2xl space-y-4" aria-live="assertive">
+        
+        <!-- Header & Top Controls -->
+        <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+          <div class="flex items-center space-x-2">
+            <div id="severity-badge" class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase shadow-lg">
+              <span id="severity-text">CRITICAL EMERGENCY</span>
+            </div>
+            <div id="risk-level-badge" class="hidden inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border">
+              <span id="risk-level-icon" class="mr-1">🔴</span>
+              <span id="risk-level-text">CRITICAL</span>
+            </div>
+          </div>
+
+          <!-- Audio Read Aloud Controls -->
+          <div class="flex items-center space-x-2">
+            <span id="tts-status" class="text-[10px] text-blue-400 font-semibold" aria-live="polite"></span>
+            <button id="tts-read-aloud-btn" type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 active:scale-95 border border-blue-400 rounded-xl text-xs font-bold text-white flex items-center space-x-1.5 shadow-md focus:ring-4 focus:ring-blue-400 transition" title="Read triage summary and first aid steps aloud" aria-label="Read triage instructions aloud">
+              <span id="tts-btn-icon" aria-hidden="true">🔊</span>
+              <span id="tts-btn-text">Read Aloud</span>
+            </button>
+            <button id="tts-play-btn" type="button" class="hidden" aria-hidden="true"></button>
+            <button id="tts-stop-btn" type="button" class="hidden" aria-hidden="true"></button>
+          </div>
+        </div>
+
+        <!-- 1. IMAGE OBSERVATION (Smart Photo Analysis) -->
+        <div id="observation-container" class="hidden p-3.5 bg-gray-800/90 rounded-xl border border-blue-500/30 space-y-1">
+          <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center space-x-1.5">
+            <span aria-hidden="true">📸</span>
+            <span>1. Image Observation</span>
+          </h3>
+          <p id="triage-observation-text" class="text-xs text-gray-200 leading-relaxed"></p>
+        </div>
+
+        <!-- 2. POSSIBLE RISK OR HAZARD -->
+        <div id="hazards-container" class="hidden p-3.5 bg-gray-800/90 rounded-xl border border-amber-500/30 space-y-1">
+          <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-1.5">
+            <span aria-hidden="true">⚠️</span>
+            <span>2. Possible Risk or Hazard</span>
+          </h3>
+          <p id="triage-hazards-text" class="text-xs text-gray-200 leading-relaxed"></p>
+        </div>
+
+        <!-- 3. RISK LEVEL & REASON -->
+        <div id="risk-reason-container" class="p-3.5 bg-gray-800/90 rounded-xl border border-gray-700/80 space-y-1">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center space-x-1.5">
+              <span>🎯 3. Risk Level Assessment</span>
+            </h3>
+            <span id="triage-risk-tag" class="text-xs font-extrabold text-red-400 font-mono">CRITICAL</span>
+          </div>
+          <p id="triage-risk-reason-text" class="text-xs text-gray-300 leading-relaxed"></p>
+          <p id="triage-summary" class="text-xs font-semibold text-gray-100 pt-1 border-t border-gray-700/60"></p>
+        </div>
+
+        <!-- 4. WHAT TO DO NOW (Immediate Steps Checklist) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center space-x-1.5">
+              <span>🩺 4. What To Do Now (Immediate First Aid)</span>
+            </h3>
+            <span id="steps-progress" class="text-[10px] text-gray-400 font-semibold">0 of 0 Completed</span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-gray-800 rounded-full h-1.5 mb-2 overflow-hidden border border-gray-700">
+            <div id="steps-progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300 w-0"></div>
+          </div>
+
+          <!-- Step Items -->
+          <ol id="steps-list" class="space-y-2"></ol>
+        </div>
+
+        <!-- 5. PRECAUTIONS (Things to Avoid) -->
+        <div id="warnings-container" class="p-3.5 bg-amber-950/40 border border-amber-800/80 rounded-xl space-y-2">
+          <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-1.5">
+            <span aria-hidden="true">🛑</span>
+            <span>5. Precautions (Do Not Do)</span>
+          </h3>
+          <ul id="warnings-list" class="space-y-1.5"></ul>
+        </div>
+
+        <!-- 6. WHEN TO SEEK URGENT HELP -->
+        <div id="urgent-help-container" class="p-3.5 bg-red-950/30 border border-red-800/60 rounded-xl space-y-1">
+          <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center space-x-1.5">
+            <span aria-hidden="true">🚨</span>
+            <span>6. When To Seek Urgent Help</span>
+          </h3>
+          <p id="urgent-help-text" class="text-xs text-red-200 leading-relaxed">
+            If severe bleeding persists, airway obstruction occurs, or chemical spreads, escalate to Campus Emergency Security immediately.
+          </p>
+        </div>
+
+        <!-- 7. AI LIMITATION NOTE -->
+        <div id="ai-disclaimer-container" class="p-2.5 bg-gray-950 rounded-xl border border-gray-800 flex items-center space-x-2 text-[11px] text-gray-400">
+          <span class="text-base" aria-hidden="true">🛡️</span>
+          <p id="ai-disclaimer-text" class="flex-1">
+            <strong>AI Safety Copilot Note:</strong> For triage assistance only; not a definitive medical diagnosis. In critical situations, tap 1-Tap SOS.
+          </p>
+        </div>
+
+        <!-- Simulated Campus Alert Dispatch HUD -->
+        <div class="p-4 bg-gray-950 rounded-xl border border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>Campus Security Dispatch Telemetry</span>
+            </h3>
+            <span id="dispatch-alert-id" class="font-mono text-xs font-bold text-blue-400">RC-9821</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-gray-900 p-2 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Assigned Unit</span>
+              <span id="dispatch-unit" class="font-bold text-gray-200">CAMPUS_PARAMEDIC</span>
+            </div>
+            <div class="bg-gray-900 p-2 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Estimated Arrival</span>
+              <span id="dispatch-eta" class="font-bold text-emerald-400">3-5 mins</span>
+            </div>
+            <div class="bg-gray-900 p-2 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Status</span>
+              <span id="dispatch-status" class="font-bold text-amber-400">DISPATCHED</span>
+            </div>
+            <div class="bg-gray-900 p-2 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Target Sector</span>
+              <span id="dispatch-location" class="font-bold text-gray-200 truncate">Central Sector</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+  </main>
+
+  <!-- 1-Tap SOS Confirmation & Emergency Dialer Dialog Modal -->
+  <dialog id="sos-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 w-full h-full" aria-modal="true" aria-labelledby="sos-dialog-title">
+    <div class="bg-gray-900 border-2 border-red-500 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 text-gray-100 relative animate-scale-up">
+      
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl" aria-hidden="true">🚨</span>
+          <h2 id="sos-dialog-title" class="text-lg font-black text-red-400 uppercase tracking-wider">Instant SOS Dispatch</h2>
+        </div>
+        <button id="sos-close-btn" type="button" class="text-gray-400 hover:text-white p-1 rounded-lg focus:ring-2 focus:ring-red-400" aria-label="Close SOS Dialog">
+          ✕
+        </button>
+      </div>
+
+      <p class="text-xs text-gray-300 leading-relaxed">
+        Emergency beacon broadcasting to Campus Emergency Response Control. Tap any dialer below for instantaneous 1-click connection:
+      </p>
+
+      <!-- Geolocation Coordinates Display -->
+      <div class="bg-gray-950 p-3 rounded-xl border border-gray-800 flex items-center justify-between text-xs">
+        <span class="text-gray-400">Detected Beacon Grid:</span>
+        <span id="sos-geo-coord" class="font-mono text-blue-400 font-bold">Acquiring GPS...</span>
+      </div>
+
+      <!-- Quick Emergency Call Buttons -->
+      <div class="space-y-2.5">
+        <a href="tel:112" class="w-full bg-red-600 hover:bg-red-700 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-between shadow-lg transition active:scale-95">
+          <span class="flex items-center space-x-2">
+            <span>📞</span>
+            <span>Emergency Police / Paramedic</span>
+          </span>
+          <span class="font-mono bg-red-800 px-2 py-0.5 rounded text-xs">112 / 911</span>
+        </a>
+
+        <a href="tel:+18005550199" class="w-full bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-100 font-bold text-sm py-3 px-4 rounded-xl flex items-center justify-between transition active:scale-95">
+          <span class="flex items-center space-x-2">
+            <span>🛡️</span>
+            <span>Campus Security Patrol</span>
+          </span>
+          <span class="font-mono text-xs text-blue-400">Ext 4444</span>
+        </a>
+
+        <a href="tel:+18005550188" class="w-full bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-100 font-bold text-sm py-3 px-4 rounded-xl flex items-center justify-between transition active:scale-95">
+          <span class="flex items-center space-x-2">
+            <span>🏥</span>
+            <span>Campus Health & HAZMAT Desk</span>
+          </span>
+          <span class="font-mono text-xs text-amber-400">Ext 5555</span>
+        </a>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- Offline Emergency Guide Quick Reference Modal (100% Offline Static) -->
+  <dialog id="offline-guide-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 w-full h-full overflow-y-auto" aria-modal="true" aria-labelledby="offline-guide-title">
+    <div class="bg-gray-900 border-2 border-emerald-500/80 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 text-gray-100 relative my-8">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-2xl" aria-hidden="true">📖</span>
+          <div>
+            <h2 id="offline-guide-title" class="text-base sm:text-lg font-black text-emerald-400 uppercase tracking-wider">
+              Offline First-Aid Emergency Reference
+            </h2>
+            <p class="text-[11px] text-gray-400 font-medium">100% Offline Accessible • Standard Campus Health Protocols</p>
+          </div>
+        </div>
+        <button id="offline-guide-close-icon" type="button" class="text-gray-400 hover:text-white p-1 rounded-lg focus:ring-2 focus:ring-emerald-400" aria-label="Close Offline Guide">
+          ✕
+        </button>
+      </div>
+
+      <!-- Quick First-Aid Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+        
+        <!-- Severe Bleeding Card -->
+        <div class="bg-gray-800/90 border border-red-500/40 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-base" aria-hidden="true">🩸</span>
+            <h3 class="font-bold text-red-300 text-sm">Severe Bleeding</h3>
+          </div>
+          <ul class="space-y-1 text-gray-200 list-disc list-inside leading-relaxed">
+            <li><strong>Direct Pressure:</strong> Apply firm, continuous direct pressure with sterile cloth/gauze without lifting.</li>
+            <li><strong>Elevate:</strong> Keep injured limb raised above heart level if no fracture is suspected.</li>
+            <li><strong>Do Not Remove:</strong> If dressing soaks through, add more layers directly on top.</li>
+          </ul>
+        </div>
+
+        <!-- Chemical Spill Card -->
+        <div class="bg-gray-800/90 border border-amber-500/40 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-base" aria-hidden="true">🧪</span>
+            <h3 class="font-bold text-amber-300 text-sm">Chemical Spill / Acid</h3>
+          </div>
+          <ul class="space-y-1 text-gray-200 list-disc list-inside leading-relaxed">
+            <li><strong>Wash With Water:</strong> Flush affected skin/eyes with copious running water for at least 15–20 minutes.</li>
+            <li><strong>Remove Clothing:</strong> Carefully remove contaminated clothing without spreading chemical.</li>
+            <li><strong>Do Not Neutralize:</strong> Never apply neutralizing chemicals without HAZMAT direction.</li>
+          </ul>
+        </div>
+
+        <!-- Burns Card -->
+        <div class="bg-gray-800/90 border border-orange-500/40 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-base" aria-hidden="true">🔥</span>
+            <h3 class="font-bold text-orange-300 text-sm">Thermal Burns</h3>
+          </div>
+          <ul class="space-y-1 text-gray-200 list-disc list-inside leading-relaxed">
+            <li><strong>Cool Water:</strong> Cool the burn immediately under cool, gentle running water for 10–20 minutes.</li>
+            <li><strong>No Ice or Butter:</strong> NEVER use ice, ice water, oil, or greasy ointments.</li>
+            <li><strong>Cover Loosely:</strong> Protect with a clean, dry, non-adherent sterile dressing.</li>
+          </ul>
+        </div>
+
+        <!-- Heatstroke / Fainting Card -->
+        <div class="bg-gray-800/90 border border-blue-500/40 rounded-2xl p-3.5 space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-base" aria-hidden="true">☀️</span>
+            <h3 class="font-bold text-blue-300 text-sm">Heatstroke / Fainting</h3>
+          </div>
+          <ul class="space-y-1 text-gray-200 list-disc list-inside leading-relaxed">
+            <li><strong>Cool Shade:</strong> Move victim to a cool, shaded or air-conditioned area immediately.</li>
+            <li><strong>Elevate Feet:</strong> Loosen tight clothing; elevate legs/feet 12 inches if fainting.</li>
+            <li><strong>Hydrate Carefully:</strong> Provide small sips of cool water ONLY if fully conscious and responsive.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="pt-2 border-t border-gray-800 flex items-center justify-between">
+        <span class="text-[11px] text-gray-400">🚨 For immediate life-threatening incidents, tap the 1-TAP SOS button.</span>
+        <button id="offline-guide-close-btn" type="button" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition active:scale-95 focus:ring-4 focus:ring-emerald-400">
+          Close Guide
+        </button>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- Footer with IEEE WIE Info & Accessibility Credentials -->
+  <footer class="bg-gray-900 border-t border-gray-800 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-gray-200">ResQCampus AI</span>
+        <span>• PromptWars x WIE-IEEE Assistive Health & Emergency Safety</span>
+      </div>
+      <div class="flex items-center space-x-4 text-[11px]">
+        <span class="text-emerald-400 font-medium">✓ WCAG 2.1 AA Compliant</span>
+        <span>• Multimodal Gemini 2.5 Flash</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main Application Script -->
+  <script src="/app.js"></script>
+</body>
+</html>
